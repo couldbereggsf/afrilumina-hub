@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: afrilumina-backend-ingress
+  annotations:
+    # Adjust based on the ingress controller you install on AKS (e.g. nginx, AGIC for Azure App Gateway)
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"   # if using cert-manager for TLS
+spec:
+  tls:
+    - hosts:
+        - api.afriluminahub.com
+      secretName: afrilumina-tls
+  rules:
+    - host: api.afriluminahub.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: afrilumina-backend-svc
+                port:
+                  number: 80

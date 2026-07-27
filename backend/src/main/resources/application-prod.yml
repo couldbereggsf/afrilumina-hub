@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    # Azure Database for MySQL Flexible Server typically requires SSL.
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}?useSSL=true&requireSSL=true&serverTimezone=UTC
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    com.reggs.afrilumina: INFO
+    org.hibernate.SQL: WARN

@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: afrilumina-backend
+  labels:
+    app: afrilumina-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: afrilumina-backend
+  template:
+    metadata:
+      labels:
+        app: afrilumina-backend
+    spec:
+      containers:
+        - name: afrilumina-backend
+          # Replace with your ACR image, e.g. afriluminaacr.azurecr.io/afrilumina-backend:latest
+          image: REPLACE_ME_ACR_IMAGE
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: afrilumina-config
+            - secretRef:
+                name: afrilumina-secrets
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 45
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "384Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

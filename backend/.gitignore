@@ -1,0 +1,9 @@
+.env
+target/
+.DS_Store
+/.DS_Store
+.idea/
+.vscode/
+.session.sql
+*.session.sql
+*.session.sql

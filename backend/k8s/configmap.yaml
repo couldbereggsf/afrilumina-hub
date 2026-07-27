@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: afrilumina-config
+data:
+  SPRING_PROFILES_ACTIVE: "prod"
+  DB_PORT: "3306"
+  DB_NAME: "afrilumina"
+  PAYPAL_BASE_URL: "https://api-m.sandbox.paypal.com"   # change to live URL when going live
+  ALLOWED_ORIGINS: "https://www.afriluminahub.com"
+  STRIPE_SUCCESS_URL: "https://www.afriluminahub.com/payment-success"
+  STRIPE_CANCEL_URL: "https://www.afriluminahub.com/payment-cancelled"
+  ADMIN_SEED_NAME: "Reagan"
