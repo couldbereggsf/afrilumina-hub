@@ -1,0 +1,11 @@
+
+aws_region     = "eu-west-2"
+project_name   = "afrilumina"
+environment    = "prod"
+
+# Generate these from AWS RDS
+db_username    = "afrilumina_admin"
+db_password    = "your-strong-password-here"
+
+# App Runner configuration
+app_runner_service_name = "afrilumina-backend"

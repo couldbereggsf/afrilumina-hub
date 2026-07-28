@@ -17,28 +17,30 @@ registrations (volunteers, mentors, partners, program applicants, donors), sandb
 ## Project structure
 
 ```
-afrilumina-backend/
+afrilumina-hub/backend/
 ├── src/main/java/com/reggs/afrilumina/
-│   ├── auth/            # Admin login, JWT, AdminUser entity
-│   ├── registration/    # Public signup form -> Registrant entity
-│   ├── payment/          # Stripe + PayPal checkout & webhooks
-│   ├── admin/            # Protected dashboard + Excel export
-│   ├── email/            # Confirmation/receipt emails
-│   ├── common/           # Shared exceptions, response wrapper
-│   └── config/           # Security, CORS, Stripe init, OpenAPI, admin seeding
+│   ├── auth/
+│   ├── registration/
+│   ├── payment/
+│   ├── admin/
+│   ├── email/
+│   ├── common/
+│   └── config/
 ├── src/main/resources/
 │   ├── application.yml / -dev.yml / -prod.yml
-│   └── db/migration/     # Flyway SQL (MySQL)
-├── k8s/                  # AKS manifests (deployment, service, ingress, configmap, secret template)
-├── docker-compose.yml     # App + MySQL for local dev
+│   └── db/migration/
+├── k8s/                  # (optional, kept for reference)
+├── docker-compose.yml    # (now used from root? We'll discuss later)
 ├── Dockerfile
-└── .github/workflows/ci.yml
+└── pom.xml
 ```
 
 ## Running locally
 
+**Note:**
+The `docker-compose.yml` may be moved to the root for monorepo convenience
+
 1. Copy `.env.example` to `.env` and fill in **sandbox** values:
-   - Stripe test keys: https://dashboard.stripe.com/test/apikeys
    - PayPal sandbox app: https://developer.paypal.com/dashboard/applications/sandbox
 2. Start everything:
    ```bash
@@ -68,6 +70,9 @@ No code changes needed — just update environment variables:
 - `PAYPAL_CLIENT_ID` / `PAYPAL_CLIENT_SECRET`: swap to the live app's credentials
 
 ## Deployment (Azure)
+
+**Note:**
+I'm transitioning to  AWS App Runner🌝.
 
 - **Quick path:** Build the Docker image, push to **Azure Container Registry (ACR)**, run on
   **Azure App Service (container)**, with MySQL on **Azure Database for MySQL Flexible Server**.
