@@ -16,22 +16,31 @@ React + Vite frontend for [AfriLumina Hub](https://www.afriluminahub.com/) — a
 ## Project Structure
 
 ```
-src/
-├── components/
-│   ├── Navbar.jsx          # Site-wide navigation, auth-aware
-│   └── ProtectedRoute.jsx  # Redirects unauthenticated users to /admin/login
-├── context/
-│   └── AuthContext.jsx     # JWT state management (login/logout/persist)
-├── pages/
-│   ├── Home.jsx            # Landing page + public registration form
-│   ├── PaymentPage.jsx     # Stripe / PayPal payment selection
-│   ├── PaymentSuccess.jsx  # Post-payment success screen
-│   ├── PaymentCancelled.jsx
-│   └── admin/
-│       ├── AdminLogin.jsx      # Admin login (JWT)
-│       └── AdminDashboard.jsx  # Registrants table + Excel export
-└── services/
-    └── api.js              # All backend API calls in one place
+frontend/
+├── src/
+│   ├── components/
+│   │   ├── Navbar.jsx          # Site-wide navigation, auth-aware
+│   │   └── ProtectedRoute.jsx  # Redirects unauthenticated users to /admin/login
+│   ├── context/
+│   │   └── AuthContext.jsx     # JWT state management
+│   ├── pages/
+│   │   ├── Home.jsx            # Landing page + public registration form
+│   │   ├── PaymentPage.jsx     # Stripe / PayPal payment selection
+│   │   ├── PaymentSuccess.jsx
+│   │   ├── PaymentCancelled.jsx
+│   │   ├── admin/
+│   │   │   ├── AdminLogin.jsx
+│   │   │   └── AdminDashboard.jsx
+│   │   └── legacy/              # Original HTML/CSS/JS (to be converted)
+│   ├── services/
+│   │   └── api.js
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css
+├── public/
+├── package.json
+├── vite.config.js
+└── Dockerfile
 ```
 
 ---
@@ -41,9 +50,9 @@ src/
 | Route | Access | Description |
 |---|---|---|
 | `/` | Public | Landing page with registration form |
-| `/payment` | Public | Choose Stripe or PayPal to pay |
-| `/payment-success` | Public | Stripe/PayPal redirect on success |
-| `/payment-cancelled` | Public | Stripe/PayPal redirect on cancel |
+| `/payment` | Public | Choose MPesa or PayPal to pay |
+| `/payment-success` | Public | MPesa/PayPal redirect on success |
+| `/payment-cancelled` | Public | MPesa/PayPal redirect on cancel |
 | `/admin/login` | Public | Admin login → JWT |
 | `/admin/dashboard` | Protected (JWT) | Registrants table + Excel export |
 
@@ -107,12 +116,14 @@ Pushes to `main` trigger the GitHub Actions CD pipeline (`.github/workflows/cd.y
 3. Deploys the new image to Azure App Service
 
 Live URL: `https://afrilumina-frontend.azurewebsites.net`
+Currently, the CI/CD currently deploys to Azure App Service, but the monorepo also contains the backend – and we will migrate to AWS later
 
 ---
 
 ## Related
 
-- **Backend repo:** [afrilumina-backend](https://github.com/couldbereggsf/afrilumina-backend) — Spring Boot 3.3, MySQL, Flyway, JWT, Stripe, PayPal
+- **Backend repo:** (now part of the monorepo) — Spring Boot 3.3, MySQL, Flyway, JWT, Stripe, PayPal
+- **Monorepo:** [afrilumina-hub](https://github.com/couldbereggsf/afrilumina-hub)
 - **Live site:** [afriluminahub.com](https://www.afriluminahub.com/)
 
 ---

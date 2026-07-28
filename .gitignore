@@ -58,3 +58,6 @@ Thumbs.db
 **/*.tmp
 **/*.temp
 **/hs_err_pid*
+
+**/*.tfvars
+**/*.tfvars.json
