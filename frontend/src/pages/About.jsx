@@ -1,11 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-// ============================================
-// IMPORT LEGACY CSS FOR THIS PAGE
-// ============================================
-import './legacy/css/style.css';
-import './legacy/css/animations.css';
-import './legacy/css/responsive.css';
 
 const About = () => {
     // --- Reveal animation ---

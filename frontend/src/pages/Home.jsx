@@ -1,9 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { registerInterest } from '../services/api';
-import './legacy/css/style.css';
-import './legacy/css/animations.css';
-import './legacy/css/responsive.css';
 
 import Typewriter from '../components/Typewriter';
 

@@ -14,6 +14,7 @@ import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 
 import BackToTop from './components/BackToTop';
+import Footer from './components/Footer';
 
 export default function App() {
   return (
@@ -36,11 +37,11 @@ export default function App() {
           {/* Admin */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={
-            <ProtectedRoute><AdminDashboard /></ProtectedRoute>
-          } />
+            <ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
         
         </Routes>
         <BackToTop />
+        <Footer />
       </AuthProvider>
     </BrowserRouter>
   );
