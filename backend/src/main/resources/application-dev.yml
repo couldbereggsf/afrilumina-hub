@@ -11,8 +11,3 @@ logging:
   level:
     com.reggs.afrilumina: DEBUG
     org.hibernate.SQL: DEBUG
-
-# Admin Seeder Configuration
-ADMIN_SEED_EMAIL: admin@afriluminahub.com
-ADMIN_SEED_PASSWORD: admin123
-ADMIN_SEED_NAME: Admin
