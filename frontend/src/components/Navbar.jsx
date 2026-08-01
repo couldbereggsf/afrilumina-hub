@@ -3,6 +3,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
+import { useDarkMode } from '../context/DarkModeContext';
+
 export default function Navbar() {
   const { admin, logout } = useAuth();
   const navigate = useNavigate();
@@ -10,6 +12,9 @@ export default function Navbar() {
 
   const [scrollProgress, setScrollProgress] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const { darkMode, toggleDarkMode } = useDarkMode();
+
 
   // Scroll progress bar
   useEffect(() => {
@@ -74,9 +79,12 @@ export default function Navbar() {
             ) : (
               <Link to="/admin/login" className="nav-link admin-login">Admin</Link>
             )}
+
+            <button onClick={toggleDarkMode} className="dark-toggle">
+              <i className={`fa-solid ${darkMode ? 'fa-sun' : 'fa-moon'}`}></i>
+            </button>
           </div>
 
-          {/* Mobile Menu Button */}
           <button className="mobile-menu-btn" onClick={toggleMobileMenu}>
             <i className={`fa-solid ${mobileMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
           </button>

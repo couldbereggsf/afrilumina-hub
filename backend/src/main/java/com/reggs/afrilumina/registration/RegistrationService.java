@@ -26,6 +26,14 @@ public class RegistrationService {
         return null; 
     }
 
+    public Registration save(Registration registration) {
+        return repository.save(registration);
+    }
+    
+    public Optional<Registration> findById(Long id) {
+        return repository.findById(id);
+    }
+
     public void delete(Long id) {
         repository.deleteById(id);
     }

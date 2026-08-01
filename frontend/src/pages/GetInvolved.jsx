@@ -25,18 +25,66 @@ const InvolvementModal = ({ isOpen, onClose, preSelectedRole, onSubmit }) => {
             setForm({ ...form, [name]: value });
         }
     };
-
+    //  HANDLE SUBMIT – WITH REAL BACKEND INTEGRATION
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
-        // Simulate form submission (FormSubmit or API)
-        // For now, we'll just save to localStorage and show success
+
         try {
-            // Save to localStorage (mock)
+            // 1. Upload the resume file first
+            let resumeFileName = '';
+            if (form.resume) {
+                const formData = new FormData();
+                formData.append('file', form.resume);
+
+                const uploadRes = await fetch('http://localhost:8080/api/resumes/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!uploadRes.ok) {
+                    const errorText = await uploadRes.text();
+                    throw new Error('Resume upload failed: ' + errorText);
+                }
+
+                const uploadData = await uploadRes.json();
+                resumeFileName = uploadData.fileName; // Expected: { fileName: "...", fileUrl: "..." }
+            }
+
+            // 2. Build registration payload
+            const registrationData = {
+                name: form.name,
+                email: form.email,
+                phone: form.phone,
+                role: form.role,
+                organization: form.organization || '',
+                website: form.website || '',
+                message: form.message,
+                resumeFileName: resumeFileName,
+                // date and status will be set by backend
+                status: 'pending',
+            };
+
+            // 3. Save registration to backend
+            const regRes = await fetch('http://localhost:8080/api/registrations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(registrationData),
+            });
+
+            if (!regRes.ok) {
+                const errorText = await regRes.text();
+                throw new Error('Registration failed: ' + errorText);
+            }
+
+            const savedReg = await regRes.json();
+            console.log('Saved registration:', savedReg);
+
+            // 4. Also save to localStorage (for admin portal to work)
             const registrations = JSON.parse(localStorage.getItem('afrilumina_registrations')) || [];
             const newReg = {
-                id: 'reg_' + Date.now(),
+                id: savedReg.id || 'reg_' + Date.now(),
                 name: form.name,
                 email: form.email,
                 phone: form.phone,
@@ -46,17 +94,17 @@ const InvolvementModal = ({ isOpen, onClose, preSelectedRole, onSubmit }) => {
                 details: {
                     organization: form.organization,
                     website: form.website,
-                    resume: form.resume ? form.resume.name : null,
+                    resume: resumeFileName,
                     message: form.message,
                 },
             };
             registrations.push(newReg);
             localStorage.setItem('afrilumina_registrations', JSON.stringify(registrations));
+
+            // 5. Show success
             setSuccess(true);
-            // Optionally submit to FormSubmit if needed
-            // ...
         } catch (err) {
-            setError('Something went wrong. Please try again.');
+            setError(err.message || 'Something went wrong. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -134,7 +182,7 @@ const InvolvementModal = ({ isOpen, onClose, preSelectedRole, onSubmit }) => {
                             <label>How can you support or why are you interested?</label>
                             <textarea name="message" value={form.message} onChange={handleChange} required></textarea>
                         </div>
-                        {error && <div className="error-msg">{error}</div>}
+                        {error && <div className="error-msg" style={{ color: '#D95D39' }}>{error}</div>}
                         <button type="submit" className="submit-btn" disabled={loading}>
                             {loading ? 'Submitting...' : 'Submit Inquiry'}
                             <i className="fa-regular fa-paper-plane"></i>
