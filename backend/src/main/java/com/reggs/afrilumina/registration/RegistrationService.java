@@ -1,6 +1,5 @@
 package com.reggs.afrilumina.registration;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
@@ -9,8 +8,11 @@ import java.util.Optional;
 @Service
 public class RegistrationService {
 
-    @Autowired
-    private RegistrationRepository repository;
+    private final RegistrationRepository repository;
+
+    public RegistrationService(RegistrationRepository repository) {
+        this.repository = repository;
+    }
 
     public List<Registration> findAll() {
         return repository.findAll();
