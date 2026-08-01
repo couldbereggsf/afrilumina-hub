@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal | AfriLumina</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css?v=1.2">
+    <link rel="stylesheet" href="css/animations.css?v=1.2">
+    <link rel="stylesheet" href="css/responsive.css?v=1.2">
+    <link rel="stylesheet" href="css/admin.css?v=1.2">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <header class="navbar">
+        <div class="container nav-container">
+
+            <a href="index.html" class="logo">
+                <img src="assets/images/logo.png" alt="AfriLumina Logo">
+            </a>
+
+            <nav class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="programs.html">Programs</a>
+                <a href="get-involved.html">Get Involved</a>
+                <a href="contact.html">Contact</a>
+                <a href="admin.html" class="active">Admin</a>
+            </nav>
+
+            <div class="nav-actions">
+                <button class="dark-toggle" id="darkModeToggle">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+
+                <a href="programs.html" class="btn primary-btn">
+                    Join as a Student
+                </a>
+
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- MOBILE MENU -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="programs.html">Programs</a>
+        <a href="get-involved.html">Get Involved</a>
+        <a href="contact.html">Contact</a>
+        <a href="admin.html">Admin</a>
+    </div>
+
+    <!-- MAIN ADMIN DASHBOARD SECTION -->
+    <section class="admin-section container">
+        
+        <div class="admin-header-block reveal">
+            <div>
+                <h1>Admin <span>Dashboard</span></h1>
+                <p>Monitor registrations, manage applications, and review mentor & volunteer signups.</p>
+            </div>
+        </div>
+
+        <!-- Stats Counter Panel -->
+        <div class="stats-grid reveal">
+            
+            <div class="admin-stat-card">
+                <div class="stat-icon students">
+                    <i class="fa-solid fa-user-graduate"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="count-students">0</h3>
+                    <p>Total Students</p>
+                </div>
+            </div>
+
+            <div class="admin-stat-card">
+                <div class="stat-icon mentors">
+                    <i class="fa-solid fa-chalkboard-user"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="count-mentors">0</h3>
+                    <p>Active Mentors</p>
+                </div>
+            </div>
+
+            <div class="admin-stat-card">
+                <div class="stat-icon volunteers">
+                    <i class="fa-solid fa-hand-holding-heart"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="count-volunteers">0</h3>
+                    <p>Volunteers</p>
+                </div>
+            </div>
+
+            <div class="admin-stat-card">
+                <div class="stat-icon pending">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="count-pending">0</h3>
+                    <p>Pending Actions</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Filter and Search Controls -->
+        <div class="admin-controls-card reveal">
+            <div class="controls-grid">
+                
+                <div class="search-wrapper">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="adminSearch" placeholder="Search by name, email or keyword...">
+                </div>
+
+                <div>
+                    <select id="filterRole" class="filter-select">
+                        <option value="all">All Roles</option>
+                        <option value="student">Students</option>
+                        <option value="mentor">Mentors</option>
+                        <option value="volunteer">Volunteers</option>
+                        <option value="partner">Partners</option>
+                        <option value="supporter">Supporters</option>
+                    </select>
+                </div>
+
+                <div>
+                    <select id="filterStatus" class="filter-select">
+                        <option value="all">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+
+                <div class="actions-wrapper">
+                    <button class="admin-btn btn-primary" onclick="exportDatabase()">
+                        <i class="fa-solid fa-file-export"></i>
+                        <span>Export JSON</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Registrations Table -->
+        <div class="table-card reveal">
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Registrant Info</th>
+                            <th>Role</th>
+                            <th>Phone Number</th>
+                            <th>Registered Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="regTableBody">
+                        <!-- Rendered dynamically by admin.js -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Database Settings / Developer Options -->
+        <div class="database-settings-card reveal">
+            <div class="settings-info">
+                <h4>System Database Controls</h4>
+                <p>Manage system state. Resetting will restore default mock applicants and clear manual signups.</p>
+            </div>
+            <div class="settings-actions">
+                <button class="admin-btn btn-danger-outline" onclick="resetDatabase()">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span>Reset Database</span>
+                </button>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+
+        <div class="container footer-grid">
+
+            <div>
+                <a href="index.html" class="footer-logo">
+                    <img src="assets/images/footer-logo.png" alt="AfriLumina Logo" class="footer-logo-img">
+                </a>
+                <p>Empowering the next generation of African leaders.</p>
+
+                <div class="social-icons">
+                    <a href="https://www.facebook.com/profile.php?id=61580679053761" target="_blank" rel="noopener noreferrer">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="https://www.instagram.com/p/DY4CEghMwNA/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==" target="_blank" rel="noopener noreferrer">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/company/afrilumina/" target="_blank" rel="noopener noreferrer">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <h4>Quick Links</h4>
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="programs.html">Programs</a>
+                <a href="get-involved.html">Get Involved</a>
+                <a href="contact.html">Contact</a>
+                <a href="admin.html">Admin</a>
+            </div>
+
+            <div>
+                <h4>Programs</h4>
+                <a href="programs.html#lumina-mentorship">Mentorship Hub</a>
+                <a href="programs.html#skills-accelerator">Skills Accelerator</a>
+                <a href="programs.html#career-exposure">Career Exposure</a>
+                <a href="programs.html#financial-literacy">Financial Literacy</a>
+            </div>
+
+            <div>
+                <h4>Contact</h4>
+                <p>admin@afriluminahub.com</p>
+                <p>Nairobi, Kenya</p>
+            </div>
+
+        </div>
+
+        <div class="copyright">
+            <p>© 2026 Afrilume Hub. All Rights Reserved.</p>
+        </div>
+
+    </footer>
+
+    <!-- REGISTRANT DETAILS MODAL -->
+    <div class="modal" id="adminDetailsModal">
+        <div class="modal-overlay" id="adminModalOverlay"></div>
+        <div class="modal-card" style="max-width: 650px;">
+            <button class="close-modal-btn" id="closeAdminModalBtn" aria-label="Close modal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <div class="modal-header">
+                <h2>Review Registration</h2>
+                <p>Manage application status and review submission details for <strong id="modalTitleName">Registrant</strong>.</p>
+            </div>
+
+            <div class="admin-modal-details">
+                <div class="details-grid" id="modalDetailsGrid">
+                    <!-- Rendered dynamically by admin.js -->
+                </div>
+
+                <div class="form-group" style="margin-top: 20px;">
+                    <label for="modalStatusSelect" style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:8px; color:var(--text);">Update Application Status</label>
+                    <select id="modalStatusSelect" class="filter-select" style="max-width: 250px;">
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="modal-actions-panel">
+                <button class="admin-btn btn-outline" onclick="closeDetailsModal()">Close</button>
+                <button class="admin-btn btn-primary" onclick="modalUpdateStatus()">
+                    <i class="fa-solid fa-save"></i>
+                    <span>Save Status</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script src="js/main.js?v=2.0"></script>
+    <script src="js/admin.js?v=2.0"></script>
+
+</body>
+</html>

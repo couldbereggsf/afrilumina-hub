@@ -1,7 +1,8 @@
 package com.reggs.afrilumina.config;
 
-import java.util.List;
-
+import com.reggs.afrilumina.auth.AdminUserDetailsService;
+import com.reggs.afrilumina.auth.JwtAuthFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,10 +18,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.reggs.afrilumina.auth.AdminUserDetailsService;
-import com.reggs.afrilumina.auth.JwtAuthFilter;
-
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -61,7 +59,7 @@ public class SecurityConfig {
                         // Public: visitor registrations, payment initiation + webhooks, auth, docs
                         .requestMatchers(
                             "/api/auth/**",
-                            "/api/registrations/seed",
+                            "/api/registrations",
                             "/api/payments/**",
                             "/docs/**",
                             "/swagger-ui/**",
@@ -72,7 +70,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
