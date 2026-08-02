@@ -1,3 +1,4 @@
+/*
 package com.reggs.afrilumina.registration;
 
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,4 +24,3 @@ public class RegistrantController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
         */
-}
