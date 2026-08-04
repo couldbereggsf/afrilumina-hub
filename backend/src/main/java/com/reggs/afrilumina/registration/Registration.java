@@ -22,9 +22,13 @@ public class Registration {
     private String name;
     private String email;
     private String phone;
+    
+    private String country; // <--- ADDED THIS FIELD
+
     private String role;
     private LocalDate date;
     private String status;
+    
     @Column(columnDefinition = "TEXT")
     private String details;
 
@@ -61,6 +65,11 @@ public class Registration {
     public void setEmail(String email) { this.email = email; }
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
+    
+    // ADDED GETTER AND SETTER FOR COUNTRY
+    public String getCountry() { return country; }
+    public void setCountry(String country) { this.country = country; }
+
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
     public LocalDate getDate() { return date; }

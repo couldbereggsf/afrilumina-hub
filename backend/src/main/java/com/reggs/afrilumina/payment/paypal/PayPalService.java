@@ -1,8 +1,10 @@
 package com.reggs.afrilumina.payment.paypal;
 
-import com.reggs.afrilumina.payment.PaymentProvider;
-import com.reggs.afrilumina.payment.PaymentProviderType;
-import lombok.extern.slf4j.Slf4j;
+import java.math.BigDecimal;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -11,10 +13,10 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.math.BigDecimal;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
+import com.reggs.afrilumina.payment.PaymentProvider;
+import com.reggs.afrilumina.payment.PaymentProviderType;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -57,8 +59,13 @@ public class PayPalService implements PaymentProvider {
         return response == null ? null : (String) response.get("access_token");
     }
 
+    /**
+     * phoneNumber is unused here — PayPal's checkout is a browser redirect, not a
+     * device push. It's accepted (and ignored) purely to satisfy the shared
+     * PaymentProvider interface that MpesaService also implements.
+     */
     @Override
-    public CheckoutResult createCheckout(Long transactionId, BigDecimal amount, String currency, String purpose) {
+    public CheckoutResult createCheckout(Long transactionId, BigDecimal amount, String currency, String purpose, String phoneNumber) {
         String accessToken = getAccessToken();
 
         Map<String, Object> orderRequest = Map.of(

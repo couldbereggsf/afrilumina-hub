@@ -7,8 +7,11 @@ export default function PaymentPage() {
   const navigate = useNavigate()
   const [amount, setAmount] = useState('')
   const [provider, setProvider] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  
+  const [awaitingMpesaConfirmation, setAwaitingMpesaConfirmation] = useState(false)
 
   if (!state?.registrantId) {
     return (
@@ -23,22 +26,53 @@ export default function PaymentPage() {
       setError('Please enter an amount and choose a payment method.')
       return
     }
+    if (provider === 'MPESA' && !phoneNumber.trim()) {
+      setError('Please enter the M-Pesa phone number to send the payment request to.')
+      return
+    }
+
     setLoading(true)
     setError(null)
     try {
       const res = await initiatePayment({
-        registrantId: state.registrantId,
+        registrationId: state.registrantId,
         provider,
         amount: parseFloat(amount),
-        currency: 'USD',
+        currency: provider === 'MPESA' ? 'KES' : 'USD',
         purpose: state.category === 'DONOR' ? 'DONATION' : 'PROGRAM_FEE',
+        ...(provider === 'MPESA' ? { phoneNumber: phoneNumber.trim() } : {}),
       })
-      // Redirect to the provider's checkout page
-      window.location.href = res.data.checkoutUrl
+
+      if (res.data.checkoutUrl) {
+        // PayPal (and any future redirect-based provider): send the buyer to the provider's page.
+        window.location.href = res.data.checkoutUrl
+      } else {
+        // M-Pesa: no redirect exists - the STK prompt goes straight to the customer's phone.
+        // Payment confirmation arrives later via the backend webhook, not synchronously here.
+        setAwaitingMpesaConfirmation(true)
+        setLoading(false)
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Payment initiation failed. Please try again.')
+      setError(err.response?.data?.error || 'Payment initiation failed. Please try again.')
       setLoading(false)
     }
+  }
+
+  if (awaitingMpesaConfirmation) {
+    return (
+      <div style={styles.page}>
+        <div style={styles.card}>
+          <h2 style={styles.title}>Check Your Phone</h2>
+          <p style={styles.sub}>
+            An M-Pesa payment request for <strong>KES {amount}</strong> has been sent to{' '}
+            <strong>{phoneNumber}</strong>. Enter your M-Pesa PIN on your phone to complete the payment.
+          </p>
+          <button onClick={() => navigate('/')} style={styles.backBtn}>
+            ← Back to home
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -52,28 +86,39 @@ export default function PaymentPage() {
         {error && <div style={styles.errorBox}>{error}</div>}
 
         <div style={styles.field}>
-          <label style={styles.label}>Amount (USD) *</label>
+          <label style={styles.label}>Amount ({provider === 'MPESA' ? 'KES' : 'USD'}) *</label>
           <input
-            type="number" min="1" step="0.01" value={amount}
+            type="number" min="1" step={provider === 'MPESA' ? '1' : '0.01'} value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            style={styles.input} placeholder="e.g. 25.00"
+            style={styles.input} placeholder={provider === 'MPESA' ? 'e.g. 1500' : 'e.g. 25.00'}
           />
         </div>
 
         <div style={styles.field}>
           <label style={styles.label}>Choose payment method *</label>
           <div style={styles.providerRow}>
-            {['STRIPE', 'PAYPAL'].map((p) => (
+            {['MPESA', 'PAYPAL'].map((p) => (
               <button key={p} onClick={() => setProvider(p)}
                 style={{ ...styles.providerBtn, ...(provider === p ? styles.providerSelected : {}) }}>
-                {p === 'STRIPE' ? '💳 Pay with Card (Stripe)' : '🔵 Pay with PayPal'}
+                {p === 'MPESA' ? '📱 Pay with M-Pesa' : '🔵 Pay with PayPal'}
               </button>
             ))}
           </div>
         </div>
 
+        {provider === 'MPESA' && (
+          <div style={styles.field}>
+            <label style={styles.label}>M-Pesa phone number *</label>
+            <input
+              type="tel" value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              style={styles.input} placeholder="e.g. 0712345678"
+            />
+          </div>
+        )}
+
         <button onClick={handlePay} disabled={loading} style={styles.payBtn}>
-          {loading ? 'Redirecting...' : `Pay $${amount || '0.00'} →`}
+          {loading ? 'Sending request...' : `Pay ${provider === 'MPESA' ? 'KES' : '$'}${amount || '0.00'} →`}
         </button>
 
         <button onClick={() => navigate('/')} style={styles.backBtn}>

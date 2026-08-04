@@ -8,6 +8,7 @@ data:
   DB_NAME: "afrilumina"
   PAYPAL_BASE_URL: "https://api-m.sandbox.paypal.com"   # change to live URL when going live
   ALLOWED_ORIGINS: "https://www.afriluminahub.com"
-  STRIPE_SUCCESS_URL: "https://www.afriluminahub.com/payment-success"
-  STRIPE_CANCEL_URL: "https://www.afriluminahub.com/payment-cancelled"
   ADMIN_SEED_NAME: "Reagan"
+  MPESA_SHORT_CODE: "REPLACE_WITH_SHORTCODE"        # e.g. 174379 for sandbox
+  MPESA_API_URL: "https://sandbox.safaricom.co.ke"  # switch to https://api.safaricom.co.ke in prod
+  MPESA_CALLBACK_URL: "https://www.afriluminahub.com/api/mpesa/callback"

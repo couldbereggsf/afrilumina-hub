@@ -15,12 +15,11 @@
     <artifactId>afrilumina-backend</artifactId>
     <version>0.1.0</version>
     <name>afrilumina-backend</name>
-    <description>Backend for AfriLumina Hub - registration, payments (sandbox), admin reporting</description>
+    <description>Backend for AfriLumina Hub - registration, payments (M-Pesa/PayPal), admin reporting</description>
 
     <properties>
         <java.version>21</java.version>
         <jjwt.version>0.12.6</jjwt.version>
-        <stripe.version>33.0.0</stripe.version>
         <poi.version>5.3.0</poi.version>
         <springdoc.version>2.6.0</springdoc.version>
     </properties>
@@ -88,9 +87,14 @@
 
         <!-- Payments -->
         <dependency>
-            <groupId>com.stripe</groupId>
-            <artifactId>stripe-java</artifactId>
-            <version>${stripe.version}</version>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okio</groupId>
+            <artifactId>okio</artifactId>
+            <version>3.9.0</version>
         </dependency>
         <!-- PayPal: we call the REST/Orders v2 API directly via WebClient (see payment/paypal package),
              so no heavy SDK dependency is needed - just WebFlux's WebClient for HTTP calls. -->
@@ -141,6 +145,17 @@
     <build>
         <finalName>afrilumina-backend</finalName>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- Byte Buddy (used internally by Mockito for class mocking/spying) doesn't
+                         yet officially support Java 26's class file format. This flag tells it to
+                         attempt instrumentation anyway rather than hard-fail. Safe to remove once
+                         Mockito/Byte Buddy ship official Java 26 support. -->
+                    <argLine>-Dnet.bytebuddy.experimental=true</argLine>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

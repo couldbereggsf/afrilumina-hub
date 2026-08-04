@@ -1,17 +1,20 @@
 package com.reggs.afrilumina.registration.dto;
 
-import java.time.LocalDateTime;
-
 import com.reggs.afrilumina.registration.RegistrationCategory;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record RegistrationResponse(
         Long id,
-        String fullName,
+        String name,
         String email,
         String phone,
-        String country,
+        String role,
         RegistrationCategory category,
+        String details,
         String status,
+        LocalDate date,
         LocalDateTime createdAt
 ) {
 }
