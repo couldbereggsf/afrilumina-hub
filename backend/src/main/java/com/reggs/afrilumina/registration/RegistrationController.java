@@ -15,11 +15,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/registrations")
 @CrossOrigin(origins = "http://localhost:5173") // Crucial for React to talk to my Spring
 @RequiredArgsConstructor
+@Slf4j
 public class RegistrationController {
 
     private final RegistrationService service;
@@ -33,9 +35,7 @@ public class RegistrationController {
     // GET one registration
     @GetMapping("/{id}")
     public ResponseEntity<Registration> getOne(@PathVariable Long id) {
-        return service.findAll().stream()
-                .filter(registration -> registration.getId().equals(id))
-                .findFirst()
+        return service.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -47,6 +47,7 @@ public class RegistrationController {
             Registration saved = service.save(registration);
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
+            log.error("Failed to create registration", e);
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
@@ -54,11 +55,16 @@ public class RegistrationController {
     // UPDATE status only
     @PutMapping("/{id}/status")
     public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
-        Registration updated = service.updateStatus(id, body.get("status"));
-        if (updated != null) {
-            return ResponseEntity.ok(updated);
+        try {
+            Registration updated = service.updateStatus(id, body.get("status"));
+            if (updated != null) {
+                return ResponseEntity.ok(updated);
+            }
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            log.error("Failed to update registration status for id={}", id, e);
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
-        return ResponseEntity.notFound().build();
     }
 
     // DELETE
@@ -70,7 +76,13 @@ public class RegistrationController {
 
     // SEED database (Reset button)
     @PostMapping("/seed")
-    public List<Registration> seedData() {
-        return service.seedDefaultData();
+    public ResponseEntity<?> seedData() {
+        try {
+            List<Registration> seeded = service.seedDefaultData();
+            return ResponseEntity.ok(seeded);
+        } catch (Exception e) {
+            log.error("Failed to seed registration data", e);
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
     }
 }

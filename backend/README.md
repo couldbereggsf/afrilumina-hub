@@ -58,8 +58,8 @@ The `docker-compose.yml` may be moved to the root for monorepo convenience
 | POST | `/api/payments/stripe/webhook` | Stripe signature | Confirms Stripe payment completion |
 | GET | `/api/payments/paypal/capture?token=...` | Public (PayPal redirect) | Captures an approved PayPal order |
 | POST | `/api/auth/login` | Public | Admin login -> JWT |
-| GET | `/api/admin/registrants` | JWT (ADMIN) | Paginated registrant list |
-| GET | `/api/admin/registrants/export` | JWT (ADMIN) | Download registrants as `.xlsx` |
+| GET | `/api/admin/registrations` | JWT (ADMIN) | Paginated registration list |
+| GET | `/api/admin/registrations/export` | JWT (ADMIN) | Download registrations as `.xlsx` |
 
 ## Swapping sandbox -> live payments later
 

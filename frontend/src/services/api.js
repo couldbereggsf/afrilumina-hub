@@ -27,12 +27,13 @@ api.interceptors.response.use(
   }
 )
 
+
 //  PUBLIC ENDPOINTS
 
 // Registration
 export const registerInterest = (data) => api.post('/registrations', data)
 
-// Alternative registration
+// Alternative registration (if you want to use the same function)
 export const createRegistration = (data) => api.post('/registrations', data)
 
 // Resume Upload (multipart/form-data)
@@ -56,7 +57,6 @@ export const adminLogin = (email, password) =>
   api.post('/auth/login', { email, password })
 
 //  ADMIN ENDPOINTS (Protected)
-
 export const getRegistrants = (params) =>
   api.get('/admin/registrants', { params })
 

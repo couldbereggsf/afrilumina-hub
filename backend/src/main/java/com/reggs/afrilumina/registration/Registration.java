@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -25,6 +27,10 @@ public class Registration {
     private String status;
     @Column(columnDefinition = "TEXT")
     private String details;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category", nullable = false)
+    private RegistrationCategory category;
 
     // resume field
     @Column(name = "resume_file_name", length = 255)
@@ -74,5 +80,7 @@ public class Registration {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    
+
+    public RegistrationCategory getCategory() { return category; }
+    public void setCategory(RegistrationCategory category) { this.category = category; }
 }

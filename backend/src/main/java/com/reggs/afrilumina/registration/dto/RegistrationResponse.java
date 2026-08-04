@@ -1,9 +1,8 @@
 package com.reggs.afrilumina.registration.dto;
 
-import com.reggs.afrilumina.registration.RegistrantCategory;
-import com.reggs.afrilumina.registration.RegistrantStatus;
-
 import java.time.LocalDateTime;
+
+import com.reggs.afrilumina.registration.RegistrationCategory;
 
 public record RegistrationResponse(
         Long id,
@@ -11,8 +10,8 @@ public record RegistrationResponse(
         String email,
         String phone,
         String country,
-        RegistrantCategory category,
-        RegistrantStatus status,
+        RegistrationCategory category,
+        String status,
         LocalDateTime createdAt
 ) {
 }

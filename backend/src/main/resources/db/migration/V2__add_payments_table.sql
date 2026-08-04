@@ -1,7 +1,7 @@
 CREATE TABLE payment_transaction (
-    id BIGINT IDENTITY(1,1) NOT NULL,
-    registrant_id BIGINT NOT NULL,
-    provider TEXT NOT NULL,
+    id BIGINT AUTO_INCREMENT NOT NULL,
+    registration_id BIGINT NOT NULL,
+    provider VARCHAR(50) NOT NULL,
     provider_reference VARCHAR(255) NULL,
     amount DECIMAL(10,2) NOT NULL,
     currency VARCHAR(10) NOT NULL DEFAULT 'USD',
@@ -13,8 +13,8 @@ CREATE TABLE payment_transaction (
 );
 
 ALTER TABLE payment_transaction
-    ADD CONSTRAINT fk_payment_transaction_registrant
-    FOREIGN KEY (registrant_id) REFERENCES registrant(id);
+    ADD CONSTRAINT fk_payment_transaction_registration
+    FOREIGN KEY (registration_id) REFERENCES registration(id);
 
 CREATE INDEX idx_payment_provider_ref ON payment_transaction (provider_reference);
 CREATE INDEX idx_payment_provider ON payment_transaction (provider);

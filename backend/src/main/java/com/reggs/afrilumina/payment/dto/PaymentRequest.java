@@ -8,8 +8,8 @@ import java.math.BigDecimal;
 
 public record PaymentRequest(
 
-        @NotNull(message = "registrantId is required")
-        Long registrantId,
+        @NotNull(message = "registrationId is required")
+        Long registrationId,
 
         @NotNull(message = "provider is required")
         PaymentProviderType provider,

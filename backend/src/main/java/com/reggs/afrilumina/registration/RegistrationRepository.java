@@ -9,14 +9,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface RegistrantRepository extends JpaRepository<Registrant, Long> {
+public interface RegistrationRepository extends JpaRepository<Registration, Long> {
 
-    Page<Registrant> findByCategory(RegistrantCategory category, Pageable pageable);
+    Page<Registration> findByCategory(RegistrationCategory category, Pageable pageable);
 
-    List<Registrant> findByCreatedAtBetween(LocalDateTime from, LocalDateTime to);
+    List<Registration> findByCreatedAtBetween(LocalDateTime from, LocalDateTime to);
 
-    List<Registrant> findByCategoryAndCreatedAtBetween(
-            RegistrantCategory category, LocalDateTime from, LocalDateTime to);
+    List<Registration> findByCategoryAndCreatedAtBetween(
+            RegistrationCategory category, LocalDateTime from, LocalDateTime to);
 
-    boolean existsByEmailAndCategory(String email, RegistrantCategory category);
+    boolean existsByEmailAndCategory(String email, RegistrationCategory category);
 }
