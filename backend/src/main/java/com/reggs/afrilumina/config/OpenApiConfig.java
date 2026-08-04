@@ -12,7 +12,7 @@ public class OpenApiConfig {
     public OpenAPI afriluminaOpenApi() {
         return new OpenAPI().info(new Info()
                 .title("AfriLumina Hub API")
-                .description("Registration, sandbox payments (Stripe/PayPal), and admin reporting for AfriLumina Hub")
+                .description("Registration, payments (M-Pesa/PayPal), and admin reporting for AfriLumina Hub")
                 .version("0.1.0"));
     }
 }

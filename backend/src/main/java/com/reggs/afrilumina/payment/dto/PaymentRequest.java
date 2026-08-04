@@ -1,25 +1,22 @@
 package com.reggs.afrilumina.payment.dto;
 
-import com.reggs.afrilumina.payment.PaymentProviderType;
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import com.reggs.afrilumina.payment.PaymentProviderType;
 
-import java.math.BigDecimal;
-
+/**
+ * Incoming payment request.
+ *
+ * phoneNumber is required when provider == MPESA (STK push target) and ignored for PAYPAL.
+ * Validated in PaymentService rather than here, since the "required" rule depends on
+ * the provider field — a single @NotNull on phoneNumber would wrongly reject PayPal requests.
+ */
 public record PaymentRequest(
-
-        @NotNull(message = "registrationId is required")
-        Long registrationId,
-
-        @NotNull(message = "provider is required")
-        PaymentProviderType provider,
-
-        @NotNull(message = "amount is required")
-        @DecimalMin(value = "1.00", message = "amount must be at least 1.00")
-        BigDecimal amount,
-
-        String currency,   // defaults to USD if blank
-
-        String purpose     // e.g. DONATION, PROGRAM_FEE
+        @NotNull Long registrationId,
+        @NotNull PaymentProviderType provider,
+        @NotNull @Positive java.math.BigDecimal amount,
+        String currency,
+        @NotNull String purpose,
+        String phoneNumber
 ) {
 }

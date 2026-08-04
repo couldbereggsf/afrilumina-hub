@@ -29,11 +29,11 @@ public class PaymentTransaction {
     private Registration registration;  // the registration associated with this payment
 
     @Enumerated(EnumType.STRING)
-@Column(nullable = false)
-private PaymentProviderType provider;       // STRIPE or PAYPAL - which provider was used
+    @Column(nullable = false)
+    private PaymentProviderType provider;       // MPESA or PAYPAL - which provider was used
 
-@Column(name = "provider_reference")
-private String providerReference;            // the provider's own transaction ID (Stripe session id / PayPal order id)
+    @Column(name = "provider_reference")
+    private String providerReference;            // the provider's own transaction ID (M-Pesa CheckoutRequestID/receipt number, or PayPal order id)
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;

@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.reggs.afrilumina.email.EmailService; // Added this import
 import com.reggs.afrilumina.registration.dto.RegistrationRequest;
 import com.reggs.afrilumina.registration.dto.RegistrationResponse;
 
@@ -20,11 +21,14 @@ class RegistrationServiceTest {
 
     @Mock
     private RegistrationRepository registrationRepository;
-    private Object NEW;
+
+    @Mock
+    private EmailService emailService;
 
     @Test
     void register_savesRegistration() {
-        RegistrationService service = new RegistrationService(registrationRepository);
+    
+        RegistrationService service = new RegistrationService(registrationRepository, emailService);
 
         RegistrationRequest request = new RegistrationRequest(
                 "Jane Doe", "jane@example.com", "+254700000000", "Kenya",
@@ -42,26 +46,13 @@ class RegistrationServiceTest {
         assertThat(response.id()).isEqualTo(42L);
         assertThat(response.email()).isEqualTo("jane@example.com");
         assertThat(response.category()).isEqualTo(RegistrationCategory.MENTOR);
-        assertThat(response.status()).isEqualTo(NEW);
+        assertThat(response.status()).isEqualTo("NEW");
 
         ArgumentCaptor<Registration> captor = ArgumentCaptor.forClass(Registration.class);
         verify(registrationRepository).save(captor.capture());
         assertThat(captor.getValue().getName()).isEqualTo("Jane Doe");
-    }
 
-    public RegistrationRepository getRegistrationRepository() {
-        return registrationRepository;
-    }
-
-    public void setRegistrationRepository(RegistrationRepository registrationRepository) {
-        this.registrationRepository = registrationRepository;
-    }
-
-    public Object getNEW() {
-        return NEW;
-    }
-
-    public void setNEW(Object nEW) {
-        NEW = nEW;
+        
+        verify(emailService).sendRegistrationConfirmation(any(Registration.class));
     }
 }

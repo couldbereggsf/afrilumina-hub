@@ -35,11 +35,13 @@ app:
   cors:
     allowed-origins: ${ALLOWED_ORIGINS:https://www.afriluminahub.com,http://localhost:5173}
   payments:
-    stripe:
-      secret-key: ${STRIPE_SECRET_KEY:}
-      webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
-      success-url: ${STRIPE_SUCCESS_URL:https://www.afriluminahub.com/payment-success}
-      cancel-url: ${STRIPE_CANCEL_URL:https://www.afriluminahub.com/payment-cancelled}
+    mpesa:
+      consumer-key: ${MPESA_CONSUMER_KEY}
+      consumer-secret: ${MPESA_CONSUMER_SECRET}
+      passkey: ${MPESA_PASSKEY}
+      short-code: ${MPESA_SHORT_CODE}
+      api-url: ${MPESA_API_URL:https://sandbox.safaricom.co.ke}
+      callback-url: ${MPESA_CALLBACK_URL}
     paypal:
       client-id: ${PAYPAL_CLIENT_ID:}
       client-secret: ${PAYPAL_CLIENT_SECRET:}
