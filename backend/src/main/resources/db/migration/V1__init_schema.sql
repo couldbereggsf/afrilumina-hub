@@ -4,10 +4,10 @@ CREATE TABLE admin_user (
     password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(255) NOT NULL,
     role VARCHAR(50) NOT NULL DEFAULT 'ADMIN',
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE registrant (
+CREATE TABLE registration (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     full_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
@@ -16,10 +16,10 @@ CREATE TABLE registrant (
     category VARCHAR(50) NOT NULL,        -- VOLUNTEER, MENTOR, PARTNER, PROGRAM_APPLICANT, DONOR
     message TEXT,
     status VARCHAR(50) NOT NULL DEFAULT 'NEW',  -- NEW, CONTACTED, CONFIRMED, ARCHIVED
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_registrant_email ON registrant(email);
-CREATE INDEX idx_registrant_category ON registrant(category);
-CREATE INDEX idx_registrant_created_at ON registrant(created_at);
+CREATE INDEX idx_registration_email ON registration(email);
+CREATE INDEX idx_registration_category ON registration(category);
+CREATE INDEX idx_registration_created_at ON registration(created_at);

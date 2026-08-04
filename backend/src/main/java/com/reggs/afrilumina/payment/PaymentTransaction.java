@@ -1,6 +1,6 @@
 package com.reggs.afrilumina.payment;
 
-import com.reggs.afrilumina.registration.Registrant;
+import com.reggs.afrilumina.registration.Registration;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,8 +25,8 @@ public class PaymentTransaction {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "registrant_id", nullable = false)
-    private Registrant registrant;
+    @JoinColumn(name = "registration_id", nullable = false)
+    private Registration registration;  // the registration associated with this payment
 
     @Enumerated(EnumType.STRING)
 @Column(nullable = false)

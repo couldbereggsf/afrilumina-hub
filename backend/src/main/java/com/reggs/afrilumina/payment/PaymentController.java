@@ -18,7 +18,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     /**
-     * Called from the AfriLumina Hub site once a registrant chooses to pay
+     * Called from the AfriLumina Hub site once a registration chooses to pay
      * (e.g. a donation or program fee) and picks Stripe or PayPal.
      * Returns a checkout URL the frontend should redirect the browser to.
      */

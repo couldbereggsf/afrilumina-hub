@@ -1,39 +1,37 @@
 package com.reggs.afrilumina.registration;
 
-import com.reggs.afrilumina.email.EmailService;
-import com.reggs.afrilumina.registration.dto.RegistrationRequest;
-import com.reggs.afrilumina.registration.dto.RegistrationResponse;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.reggs.afrilumina.registration.dto.RegistrationRequest;
+import com.reggs.afrilumina.registration.dto.RegistrationResponse;
 
 @ExtendWith(MockitoExtension.class)
-class RegistrantServiceTest {
+class RegistrationServiceTest {
 
     @Mock
-    private RegistrantRepository registrantRepository;
-
-    @Mock
-    private EmailService emailService;
+    private RegistrationRepository registrationRepository;
+    private Object NEW;
 
     @Test
-    void register_savesRegistrantAndSendsConfirmationEmail() {
-        RegistrantService service = new RegistrantService(registrantRepository, emailService);
+    void register_savesRegistration() {
+        RegistrationService service = new RegistrationService(registrationRepository);
 
         RegistrationRequest request = new RegistrationRequest(
                 "Jane Doe", "jane@example.com", "+254700000000", "Kenya",
-                RegistrantCategory.MENTOR, "Happy to mentor!");
+                RegistrationCategory.MENTOR, "Happy to mentor!");
 
-        when(registrantRepository.save(any(Registrant.class))).thenAnswer(invocation -> {
-            Registrant r = invocation.getArgument(0);
+        when(registrationRepository.save(any(Registration.class))).thenAnswer(invocation -> {
+            Registration r = invocation.getArgument(0);
             r.setId(42L);
             r.setCreatedAt(LocalDateTime.now());
             return r;
@@ -43,13 +41,27 @@ class RegistrantServiceTest {
 
         assertThat(response.id()).isEqualTo(42L);
         assertThat(response.email()).isEqualTo("jane@example.com");
-        assertThat(response.category()).isEqualTo(RegistrantCategory.MENTOR);
-        assertThat(response.status()).isEqualTo(RegistrantStatus.NEW);
+        assertThat(response.category()).isEqualTo(RegistrationCategory.MENTOR);
+        assertThat(response.status()).isEqualTo(NEW);
 
-        ArgumentCaptor<Registrant> captor = ArgumentCaptor.forClass(Registrant.class);
-        verify(registrantRepository).save(captor.capture());
-        assertThat(captor.getValue().getFullName()).isEqualTo("Jane Doe");
+        ArgumentCaptor<Registration> captor = ArgumentCaptor.forClass(Registration.class);
+        verify(registrationRepository).save(captor.capture());
+        assertThat(captor.getValue().getName()).isEqualTo("Jane Doe");
+    }
 
-        verify(emailService).sendRegistrationConfirmation(any(Registrant.class));
+    public RegistrationRepository getRegistrationRepository() {
+        return registrationRepository;
+    }
+
+    public void setRegistrationRepository(RegistrationRepository registrationRepository) {
+        this.registrationRepository = registrationRepository;
+    }
+
+    public Object getNEW() {
+        return NEW;
+    }
+
+    public void setNEW(Object nEW) {
+        NEW = nEW;
     }
 }

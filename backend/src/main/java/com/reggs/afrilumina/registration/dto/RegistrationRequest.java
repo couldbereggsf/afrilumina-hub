@@ -1,6 +1,7 @@
 package com.reggs.afrilumina.registration.dto;
 
-import com.reggs.afrilumina.registration.RegistrantCategory;
+import com.reggs.afrilumina.registration.RegistrationCategory;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,9 +22,13 @@ public record RegistrationRequest(
         String country,
 
         @NotNull(message = "Category is required")
-        RegistrantCategory category,
+        RegistrationCategory category,
 
         @Size(max = 2000, message = "Message must be under 2000 characters")
         String message
 ) {
+
+    public String getFullName() {
+        return fullName;
+    }
 }
