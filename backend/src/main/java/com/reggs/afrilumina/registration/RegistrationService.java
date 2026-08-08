@@ -34,6 +34,17 @@ public class RegistrationService {
         if (registration.getId() == null && registration.getStatus() == null) {
             registration.setStatus("NEW");
         }
+        // Auto-set role if missing
+        if (registration.getRole() == null && registration.getCategory() != null) {
+            switch (registration.getCategory()) {
+                case MENTOR:    registration.setRole("mentor"); break;
+                case STUDENT:   registration.setRole("student"); break;
+                case PARTICIPANT: registration.setRole("participant"); break;
+                case PARTNER:   registration.setRole("partner"); break;
+                case PROFESSIONAL: registration.setRole("professional"); break;
+                default:        registration.setRole("participant");
+            }
+        }
         return repository.save(registration);
     }
 
@@ -45,21 +56,19 @@ public class RegistrationService {
         registration.setCategory(request.category());
         registration.setStatus("NEW");
         registration.setCreatedAt(LocalDateTime.now());
-
-        // Mapping the record fields to the Entity
         registration.setCountry(request.country());
 
-        // The comment says: "country and message... get folded into the details JSON blob"
-        String detailsJson = String.format("{\"country\":\"%s\",\"message\":\"%s\"}", 
-                request.country() != null ? request.country() : "", 
+        // Build details JSON
+        String detailsJson = String.format("{\"country\":\"%s\",\"message\":\"%s\"}",
+                request.country() != null ? request.country() : "",
                 request.message() != null ? request.message() : "");
         registration.setDetails(detailsJson);
 
-        Registration saved = repository.save(registration);
+        Registration saved = save(registration); // uses the enhanced save()
 
         emailService.sendRegistrationConfirmation(saved);
 
-        // FIXED: Swapped the order of details and status to match the Record signature
+        // ✅ Order: id, fullName, email, phone, country, category, status, details, date, createdAt
         return new RegistrationResponse(
             saved.getId(),
             saved.getName(),
@@ -67,10 +76,10 @@ public class RegistrationService {
             saved.getPhone(),
             saved.getCountry(),
             saved.getCategory(),
-            saved.getDetails(), // <--- 7th argument: String details
-            saved.getStatus(),  // <--- 8th argument: String status
-            saved.getDate(),    // <--- 9th argument: LocalDate date
-            saved.getCreatedAt()
+            saved.getStatus(),   // 7th: status
+            saved.getDetails(),  // 8th: details
+            saved.getDate(),     // 9th: date
+            saved.getCreatedAt() // 10th: createdAt
         );
     }
 
@@ -87,7 +96,7 @@ public class RegistrationService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
-    
+
     @Transactional
     public List<Registration> seedDefaultData() {
         repository.deleteAll();
@@ -98,6 +107,7 @@ public class RegistrationService {
         r1.setPhone("+254 712 345678");
         r1.setCountry("Kenya");
         r1.setCategory(RegistrationCategory.STUDENT);
+        r1.setRole("student");
         r1.setDetails("{\"program\":\"Lumina Mentorship Hub\",\"status\":\"Recent Graduate\",\"country\":\"Kenya\"}");
         r1.setStatus("approved");
         r1.setDate(LocalDateTime.now().toLocalDate());
@@ -110,6 +120,7 @@ public class RegistrationService {
         r2.setPhone("+234 803 123 4567");
         r2.setCountry("Nigeria");
         r2.setCategory(RegistrationCategory.MENTOR);
+        r2.setRole("mentor");
         r2.setDetails("{\"organization\":\"University of Lagos\",\"country\":\"Nigeria\"}");
         r2.setStatus("approved");
         r2.setDate(LocalDateTime.now().toLocalDate());

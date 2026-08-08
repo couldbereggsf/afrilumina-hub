@@ -7,14 +7,14 @@ import java.time.LocalDateTime;
 
 public record RegistrationResponse(
         Long id,
-        String name,
+        String fullName,
         String email,
         String phone,
-        String role,
+        String country,
         RegistrationCategory category,
-        String details,
-        String status,
-        LocalDate date,
-        LocalDateTime createdAt
+        String status,         
+        String details,         
+        LocalDate date,        
+        LocalDateTime createdAt 
 ) {
 }

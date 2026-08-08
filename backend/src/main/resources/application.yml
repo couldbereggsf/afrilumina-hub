@@ -34,6 +34,8 @@ app:
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}   # 24h
   cors:
     allowed-origins: ${ALLOWED_ORIGINS:https://www.afriluminahub.com,http://localhost:5173}
+    
+    app:
   payments:
     mpesa:
       consumer-key: ${MPESA_CONSUMER_KEY}
@@ -41,7 +43,7 @@ app:
       passkey: ${MPESA_PASSKEY}
       short-code: ${MPESA_SHORT_CODE}
       api-url: ${MPESA_API_URL:https://sandbox.safaricom.co.ke}
-      callback-url: ${MPESA_CALLBACK_URL}
+      callback-base-url: ${NGROK_BASE_URL}
     paypal:
       client-id: ${PAYPAL_CLIENT_ID:}
       client-secret: ${PAYPAL_CLIENT_SECRET:}

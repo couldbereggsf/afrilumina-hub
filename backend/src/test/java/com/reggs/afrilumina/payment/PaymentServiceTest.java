@@ -2,13 +2,16 @@ package com.reggs.afrilumina.payment;
 
 import com.reggs.afrilumina.payment.dto.PaymentRequest;
 import com.reggs.afrilumina.payment.dto.PaymentResponse;
+import com.reggs.afrilumina.payment.entity.PaymentStatus;
+import com.reggs.afrilumina.payment.entity.PaymentTransaction;
+import com.reggs.afrilumina.payment.repository.PaymentTransactionRepository;
 import com.reggs.afrilumina.registration.Registration;
+import com.reggs.afrilumina.registration.RegistrationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.repository.CrudRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -25,7 +28,7 @@ class PaymentServiceTest {
     private PaymentTransactionRepository paymentTransactionRepository;
 
     @Mock
-    private CrudRepository<Registration, Long> registrationRepository;
+    private RegistrationRepository registrationRepository;
 
     @Mock
     private PaymentProvider mpesaProvider;
@@ -37,12 +40,6 @@ class PaymentServiceTest {
 
     @BeforeEach
     void setUp() {
-        // getType() must be stubbed BEFORE constructing PaymentService, since its constructor
-        // calls getType() on every provider to build the dispatch map. Every test needs this -
-        // even ones that never reach provider dispatch, because construction happens regardless.
-        // (Previously this was stubbed per-test instead, which meant it ran AFTER setUp() had
-        // already constructed PaymentService with both providers reporting a null type - causing
-        // a "duplicate key null" collision in the dispatch map for every single test.)
         when(mpesaProvider.getType()).thenReturn(PaymentProviderType.MPESA);
         when(payPalProvider.getType()).thenReturn(PaymentProviderType.PAYPAL);
 
@@ -52,9 +49,9 @@ class PaymentServiceTest {
                 List.of(mpesaProvider, payPalProvider));
     }
 
-    private PaymentTransaction transactionWithId(Long id) {
+    private PaymentTransaction transactionWithId(Long id, PaymentProviderType type) {
         PaymentTransaction txn = PaymentTransaction.builder()
-                .provider(PaymentProviderType.MPESA)
+                .provider(type.name())
                 .amount(new BigDecimal("1500"))
                 .currency("KES")
                 .status(PaymentStatus.PENDING)
@@ -79,7 +76,7 @@ class PaymentServiceTest {
         Registration registration = new Registration();
         when(registrationRepository.findById(1L)).thenReturn(Optional.of(registration));
 
-        PaymentTransaction saved = transactionWithId(100L);
+        PaymentTransaction saved = transactionWithId(100L, PaymentProviderType.MPESA);
         when(paymentTransactionRepository.save(any(PaymentTransaction.class))).thenReturn(saved);
         when(paymentTransactionRepository.findById(100L)).thenReturn(Optional.of(saved));
 
@@ -104,7 +101,7 @@ class PaymentServiceTest {
         Registration registration = new Registration();
         when(registrationRepository.findById(2L)).thenReturn(Optional.of(registration));
 
-        PaymentTransaction saved = transactionWithId(200L);
+        PaymentTransaction saved = transactionWithId(200L, PaymentProviderType.PAYPAL);
         when(paymentTransactionRepository.save(any(PaymentTransaction.class))).thenReturn(saved);
         when(paymentTransactionRepository.findById(200L)).thenReturn(Optional.of(saved));
 
@@ -136,7 +133,7 @@ class PaymentServiceTest {
         Registration registration = new Registration();
         when(registrationRepository.findById(1L)).thenReturn(Optional.of(registration));
 
-        PaymentTransaction saved = transactionWithId(300L);
+        PaymentTransaction saved = transactionWithId(300L, PaymentProviderType.MPESA);
         when(paymentTransactionRepository.save(any(PaymentTransaction.class))).thenReturn(saved);
         when(paymentTransactionRepository.findById(300L)).thenReturn(Optional.of(saved));
 

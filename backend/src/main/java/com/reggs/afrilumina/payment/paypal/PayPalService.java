@@ -1,25 +1,23 @@
 package com.reggs.afrilumina.payment.paypal;
 
-import java.math.BigDecimal;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.reactive.function.client.WebClient;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reggs.afrilumina.payment.PaymentProvider;
 import com.reggs.afrilumina.payment.PaymentProviderType;
-
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.*;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
-@Service
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 @Slf4j
+@Service
 public class PayPalService implements PaymentProvider {
 
     @Value("${app.payments.paypal.client-id}")
@@ -29,99 +27,96 @@ public class PayPalService implements PaymentProvider {
     private String clientSecret;
 
     @Value("${app.payments.paypal.base-url}")
-    private String baseUrl;   // sandbox by default: https://api-m.sandbox.paypal.com - swap to live URL when ready
+    private String baseUrl;
 
-    private WebClient webClient() {
-        return WebClient.builder().baseUrl(baseUrl).build();
-    }
+    private final OkHttpClient client = new OkHttpClient();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public PaymentProviderType getType() {
         return PaymentProviderType.PAYPAL;
     }
 
-    private String getAccessToken() {
-        String credentials = Base64.getEncoder()
-                .encodeToString((clientId + ":" + clientSecret).getBytes());
-
-        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-        form.add("grant_type", "client_credentials");
-
-        Map<String, Object> response = webClient().post()
-                .uri("/v1/oauth2/token")
-                .header(HttpHeaders.AUTHORIZATION, "Basic " + credentials)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .body(org.springframework.web.reactive.function.BodyInserters.fromFormData(form))
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
-
-        return response == null ? null : (String) response.get("access_token");
-    }
-
-    /**
-     * phoneNumber is unused here — PayPal's checkout is a browser redirect, not a
-     * device push. It's accepted (and ignored) purely to satisfy the shared
-     * PaymentProvider interface that MpesaService also implements.
-     */
     @Override
     public CheckoutResult createCheckout(Long transactionId, BigDecimal amount, String currency, String purpose, String phoneNumber) {
-        String accessToken = getAccessToken();
+        try {
+            String accessToken = getAccessToken(); // Authenticate with PayPal
+            String jsonPayload = buildOrderPayload(amount, currency, purpose);
 
-        Map<String, Object> orderRequest = Map.of(
-                "intent", "CAPTURE",
-                "purchase_units", List.of(Map.of(
-                        "reference_id", String.valueOf(transactionId),
-                        "description", purpose == null ? "AfriLumina Hub Payment" : purpose,
-                        "amount", Map.of(
-                                "currency_code", currency,
-                                "value", amount.setScale(2).toString()
-                        )
-                )),
-                "application_context", Map.of(
-                        "brand_name", "AfriLumina Hub",
-                        "user_action", "PAY_NOW"
-                )
-        );
+            RequestBody body = RequestBody.create(jsonPayload, MediaType.parse("application/json"));
+            Request request = new Request.Builder()
+                    .url(baseUrl + "/v2/checkout/orders")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .header("Content-Type", "application/json")
+                    .post(body)
+                    .build();
 
-        Map<String, Object> response = webClient().post()
-                .uri("/v2/checkout/orders")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(orderRequest)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
+            try (Response response = client.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    String rawBody = response.body() != null ? response.body().string() : "";
+                    log.error("PayPal order creation failed: status={}, body={}", response.code(), rawBody);
+                    throw new RuntimeException("PayPal order creation failed");
+                }
 
-        if (response == null) {
-            throw new RuntimeException("PayPal order creation returned no response");
+                JsonNode json = objectMapper.readTree(response.body().string());
+                String id = json.path("id").asText();
+                String approvalUrl = null;
+
+                // Find the "approve" link in the response
+                JsonNode links = json.path("links");
+                for (JsonNode link : links) {
+                    if ("approve".equals(link.path("rel").asText())) {
+                        approvalUrl = link.path("href").asText();
+                        break;
+                    }
+                }
+                return new CheckoutResult(approvalUrl, id);
+            }
+        } catch (IOException e) {
+            log.error("PayPal integration error", e);
+            throw new RuntimeException("Failed to initiate PayPal checkout", e);
         }
-
-        String orderId = (String) response.get("id");
-
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> links = (List<Map<String, Object>>) response.get("links");
-        String approveUrl = links.stream()
-                .filter(link -> "approve".equals(link.get("rel")))
-                .map(link -> (String) link.get("href"))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("No approve link returned by PayPal"));
-
-        return new CheckoutResult(approveUrl, orderId);
     }
 
-    /** Called after the buyer approves the order on PayPal's site, to finalize the charge. */
-    public boolean captureOrder(String orderId) {
-        String accessToken = getAccessToken();
+    private String getAccessToken() throws IOException {
+        String auth = clientId + ":" + clientSecret;
+        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
 
-        Map<String, Object> response = webClient().post()
-                .uri("/v2/checkout/orders/{id}/capture", orderId)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
+        Request request = new Request.Builder()
+                .url(baseUrl + "/v1/oauth2/token")
+                .header("Authorization", "Basic " + encodedAuth)
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .post(RequestBody.create("grant_type=client_credentials", MediaType.parse("application/x-www-form-urlencoded")))
+                .build();
 
-        return response != null && "COMPLETED".equals(response.get("status"));
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) throw new IOException("Failed to get PayPal token");
+            JsonNode json = objectMapper.readTree(response.body().string());
+            return json.path("access_token").asText();
+        }
+    }
+
+    private String buildOrderPayload(BigDecimal amount, String currency, String description) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("intent", "CAPTURE");
+
+        Map<String, Object> purchaseUnit = new LinkedHashMap<>();
+        purchaseUnit.put("description", description);
+        Map<String, Object> amountMap = new LinkedHashMap<>();
+        amountMap.put("currency_code", currency != null ? currency : "USD");
+        amountMap.put("value", amount.toString());
+        purchaseUnit.put("amount", amountMap);
+        payload.put("purchase_units", new Object[]{purchaseUnit});
+
+        Map<String, Object> appContext = new LinkedHashMap<>();
+        appContext.put("return_url", "http://localhost:5173/payment-success");
+        appContext.put("cancel_url", "http://localhost:5173/payment-cancelled");
+        payload.put("application_context", appContext);
+
+        try {
+            return objectMapper.writeValueAsString(payload);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to build PayPal payload", e);
+        }
     }
 }

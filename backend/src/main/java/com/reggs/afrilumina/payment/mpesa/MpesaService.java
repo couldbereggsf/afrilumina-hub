@@ -22,17 +22,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
-/**
- * Service for interacting with the Safaricom Daraja API (M-Pesa STK Push / C2B).
- *
- * Notes:
- *  - Access tokens are cached in memory and refreshed only once they're close to expiry,
- *    to avoid hammering the OAuth endpoint on every transaction.
- *  - This class is thread-safe for concurrent STK push calls (token refresh is guarded by a lock).
- *  - Callback URL, environment (sandbox/prod) and all secrets are externalized to config —
- *    nothing is hardcoded.
- */
+@ConditionalOnProperty(name = "app.payments.mpesa.enabled", havingValue = "true", matchIfMissing = false)
+
 @Slf4j
 @Service
 public class MpesaService implements PaymentProvider {
@@ -40,27 +33,25 @@ public class MpesaService implements PaymentProvider {
     private static final DateTimeFormatter TIMESTAMP_FORMAT =
             DateTimeFormatter.ofPattern("yyyyMMddHHmmss").withZone(ZoneId.of("Africa/Nairobi"));
 
-    // Refresh the token a bit before it actually expires, to avoid a race
-    // where a request starts using a token that expires mid-flight.
     private static final long TOKEN_REFRESH_BUFFER_SECONDS = 60;
 
-    @Value("${mpesa.consumer-key}")
+    @Value("${app.payments.mpesa.consumer-key}")
     private String consumerKey;
 
-    @Value("${mpesa.consumer-secret}")
+    @Value("${app.payments.mpesa.consumer-secret}")
     private String consumerSecret;
 
-    @Value("${mpesa.passkey}")
+    @Value("${app.payments.mpesa.passkey}")
     private String passkey;
 
-    @Value("${mpesa.short-code}")
+    @Value("${app.payments.mpesa.short-code}")
     private String shortCode;
 
-    @Value("${mpesa.api-url}")
+    @Value("${app.payments.mpesa.api-url}")
     private String apiUrl;
 
-    @Value("${mpesa.callback-url}")
-    private String callbackUrl;
+    @Value("${app.payments.mpesa.callback-base-url}")
+    private String callbackBaseUrl;
 
     private final OkHttpClient client = new OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
@@ -74,9 +65,6 @@ public class MpesaService implements PaymentProvider {
     private volatile String cachedToken;
     private volatile Instant tokenExpiresAt = Instant.EPOCH;
 
-    /**
-     * Returns a valid access token, reusing the cached one if it hasn't expired yet.
-     */
     public String getAccessToken() throws IOException {
         if (cachedToken != null && Instant.now().isBefore(tokenExpiresAt)) {
             return cachedToken;
@@ -84,7 +72,6 @@ public class MpesaService implements PaymentProvider {
 
         tokenLock.lock();
         try {
-            // Re-check after acquiring the lock in case another thread already refreshed it.
             if (cachedToken != null && Instant.now().isBefore(tokenExpiresAt)) {
                 return cachedToken;
             }
@@ -132,16 +119,6 @@ public class MpesaService implements PaymentProvider {
         return PaymentProviderType.MPESA;
     }
 
-    /**
-     * PaymentProvider entry point. Delegates to stkPush after:
-     *  - validating currency is KES (M-Pesa cannot process anything else)
-     *  - rounding amount to the nearest whole KES, logging a warning if that
-     *    changed the value (e.g. a registration fee of 1500.50 becomes 1501,
-     *    and that discrepancy should be visible in logs, not silent)
-     *
-     * checkoutUrl in the returned CheckoutResult is always null: STK push has
-     * no redirect, the prompt goes straight to the customer's phone.
-     */
     @Override
     public CheckoutResult createCheckout(Long transactionId, BigDecimal amount, String currency, String purpose, String phoneNumber) {
         if (!StringUtils.hasText(currency) || !currency.equalsIgnoreCase("KES")) {
@@ -171,16 +148,6 @@ public class MpesaService implements PaymentProvider {
         }
     }
 
-    /**
-     * Initiates an STK Push (Lipa na M-Pesa Online) request.
-     *
-     * @param phoneNumber       customer phone number, any common Kenyan format
-     *                          (07XXXXXXXX, +2547XXXXXXXX, 2547XXXXXXXX)
-     * @param amount            amount in whole KES (M-Pesa does not support decimals)
-     * @param accountReference  short reference shown to the customer (max ~12 chars recommended)
-     * @param transactionDesc   short description shown to the customer
-     * @return parsed response containing MerchantRequestID / CheckoutRequestID / ResponseCode
-     */
     public StkPushResponse stkPush(String phoneNumber, long amount, String accountReference, String transactionDesc)
             throws IOException {
 
@@ -203,7 +170,7 @@ public class MpesaService implements PaymentProvider {
         payload.put("PartyA", normalizedPhone);
         payload.put("PartyB", shortCode);
         payload.put("PhoneNumber", normalizedPhone);
-        payload.put("CallBackURL", callbackUrl);
+        payload.put("CallBackURL", callbackBaseUrl + "/api/mpesa/callback");
         payload.put("AccountReference", truncate(accountReference, 12));
         payload.put("TransactionDesc", truncate(transactionDesc, 13));
 
@@ -230,9 +197,6 @@ public class MpesaService implements PaymentProvider {
         }
     }
 
-    /**
-     * Normalizes common Kenyan phone number formats to Daraja's required 2547XXXXXXXX / 2541XXXXXXXX format.
-     */
     private String normalizePhoneNumber(String phone) {
         if (phone == null) {
             throw new IllegalArgumentException("Phone number must not be null");
@@ -263,10 +227,6 @@ public class MpesaService implements PaymentProvider {
         return value.length() <= maxLength ? value : value.substring(0, maxLength);
     }
 
-    /**
-     * Parsed response from the STK Push endpoint.
-     * Field names match Daraja's response payload exactly (Jackson maps by name).
-     */
     public static class StkPushResponse {
         public String MerchantRequestID;
         public String CheckoutRequestID;
@@ -275,9 +235,6 @@ public class MpesaService implements PaymentProvider {
         public String CustomerMessage;
     }
 
-    /**
-     * Thrown when Daraja returns an error or an unexpected response shape.
-     */
     public static class MpesaException extends RuntimeException {
         public MpesaException(String message) {
             super(message);

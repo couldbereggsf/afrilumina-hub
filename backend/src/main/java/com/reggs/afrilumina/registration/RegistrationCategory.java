@@ -4,6 +4,10 @@ package com.reggs.afrilumina.registration;
  * RegistrationCategory
  */
 public enum RegistrationCategory {
-    STUDENT, MENTOR, PARTICIPANT
+    STUDENT,
+    MENTOR,
+    PARTICIPANT,
+    PARTNER,
+    PROFESSIONAL
 
 }

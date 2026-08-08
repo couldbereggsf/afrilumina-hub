@@ -12,6 +12,7 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentCancelled from './pages/PaymentCancelled';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import PaymentProcessing from './pages/PaymentProcessing';
 
 import BackToTop from './components/BackToTop';
 import Footer from './components/Footer';
@@ -30,9 +31,10 @@ export default function App() {
           <Route path="/contact" element={<Contact />} />
 
           {/* Payment */}
-          <Route path="/payment" element={<PaymentPage />} />
+          <Route path="/payment/:id" element={<PaymentPage />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/payment-cancelled" element={<PaymentCancelled />} />
+          <Route path="/payment-processing" element={<PaymentProcessing />} />
 
           {/* Admin */}
           <Route path="/admin/login" element={<AdminLogin />} />

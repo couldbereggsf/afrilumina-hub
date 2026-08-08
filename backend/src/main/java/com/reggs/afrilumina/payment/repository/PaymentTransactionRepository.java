@@ -1,6 +1,9 @@
-package com.reggs.afrilumina.payment;
+package com.reggs.afrilumina.payment.repository;
 
+import com.reggs.afrilumina.payment.entity.PaymentTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+
 
 import java.util.Optional;
 

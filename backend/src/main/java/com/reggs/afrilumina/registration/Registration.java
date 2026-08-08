@@ -54,6 +54,9 @@ public class Registration {
         if (status == null) {
             status = "pending";
         }
+        if (date == null) {
+            date = LocalDate.now();
+        }
     }
 
     // Getters and Setters

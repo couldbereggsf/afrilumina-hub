@@ -1,154 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { submitRegistrationWithResume } from '../services/api';
-
-// Modal component (internal)
-const InvolvementModal = ({ isOpen, onClose, preSelectedRole, onSubmit }) => {
-    const [form, setForm] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        role: preSelectedRole || '',
-        organization: '',
-        website: '',
-        resume: null,
-        message: '',
-    });
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(false);
-
-    const handleChange = (e) => {
-        const { name, value, files } = e.target;
-        if (name === 'resume') {
-            setForm({ ...form, resume: files[0] });
-        } else {
-            setForm({ ...form, [name]: value });
-        }
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
-        // Simulate form submission (FormSubmit or API)
-        // For now, we'll just save to localStorage and show success
-        try {
-            // Save to localStorage (mock)
-            const registrations = JSON.parse(localStorage.getItem('afrilumina_registrations')) || [];
-            const newReg = {
-                id: 'reg_' + Date.now(),
-                name: form.name,
-                email: form.email,
-                phone: form.phone,
-                role: form.role,
-                date: new Date().toISOString().slice(0, 10),
-                status: 'pending',
-                details: {
-                    organization: form.organization,
-                    website: form.website,
-                    resume: form.resume ? form.resume.name : null,
-                    message: form.message,
-                },
-            };
-            registrations.push(newReg);
-            localStorage.setItem('afrilumina_registrations', JSON.stringify(registrations));
-            setSuccess(true);
-            // Optionally submit to FormSubmit if needed
-            // ...
-        } catch (err) {
-            setError('Something went wrong. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    if (!isOpen) return null;
-
-    return (
-        <div className="modal active">
-            <div className="modal-overlay" onClick={onClose}></div>
-            <div className="modal-card">
-                <button className="close-modal-btn" onClick={onClose}>
-                    <i className="fa-solid fa-xmark"></i>
-                </button>
-                <div className="modal-header">
-                    <h2>Get Involved</h2>
-                    <p>Tell us how you'd like to collaborate with AfriLumina.</p>
-                </div>
-                {success ? (
-                    <div className="form-success-card active">
-                        <i className="fa-solid fa-circle-check"></i>
-                        <h3>Thank You!</h3>
-                        <p>Your application has been submitted successfully. We'll be in touch soon.</p>
-                        <button className="btn primary-btn" onClick={onClose}>Done</button>
-                    </div>
-                ) : (
-                    <form className="modal-form" onSubmit={handleSubmit}>
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Full Name / Org Name</label>
-                                <input type="text" name="name" value={form.name} onChange={handleChange} required />
-                            </div>
-                            <div className="form-group">
-                                <label>Email Address</label>
-                                <input type="email" name="email" value={form.email} onChange={handleChange} required />
-                            </div>
-                        </div>
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Phone Number</label>
-                                <input type="tel" name="phone" value={form.phone} onChange={handleChange} required />
-                            </div>
-                            <div className="form-group">
-                                <label>Involvement Type</label>
-                                <select name="role" value={form.role} onChange={handleChange} required>
-                                    <option value="">Select how to get involved</option>
-                                    <option value="mentor">Become a Mentor</option>
-                                    <option value="partner">Partner with Us</option>
-                                    <option value="volunteer">Volunteer</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Company / Organization <span className="optional">(Optional)</span></label>
-                                <input type="text" name="organization" value={form.organization} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label>LinkedIn / Website <span className="optional">(Optional)</span></label>
-                                <input type="url" name="website" value={form.website} onChange={handleChange} />
-                            </div>
-                        </div>
-                        <div className="form-group">
-                            <label>Upload Resume / Profile <span className="required">* (.pdf, .doc, .docx - Max 5MB)</span></label>
-                            <div className="file-dropzone">
-                                <input type="file" name="resume" accept=".pdf,.doc,.docx" onChange={handleChange} required />
-                                <div className="file-dropzone-content">
-                                    <i className="fa-solid fa-cloud-arrow-up"></i>
-                                    <span className="dropzone-title">Click to upload or drag and drop</span>
-                                    <span className="dropzone-sub">PDF, DOC, or DOCX (Max 5MB)</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="form-group">
-                            <label>How can you support or why are you interested?</label>
-                            <textarea name="message" value={form.message} onChange={handleChange} required></textarea>
-                        </div>
-                        {error && <div className="error-msg">{error}</div>}
-                        <button type="submit" className="submit-btn" disabled={loading}>
-                            {loading ? 'Submitting...' : 'Submit Inquiry'}
-                            <i className="fa-regular fa-paper-plane"></i>
-                        </button>
-                    </form>
-                )}
-            </div>
-        </div>
-    );
-};
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Main GetInvolved Component
 const GetInvolved = () => {
+    const navigate = useNavigate();
+
     // Reveal animation
     useEffect(() => {
         const reveals = document.querySelectorAll('.reveal');
@@ -169,6 +25,7 @@ const GetInvolved = () => {
     // Modal state
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState('');
+    const [registrationId, setRegistrationId] = useState(null);
 
     const openModal = (role) => {
         setSelectedRole(role);
@@ -176,8 +33,10 @@ const GetInvolved = () => {
     };
 
     const closeModal = () => {
+        console.log("Closing modal...");
         setModalOpen(false);
         setSelectedRole('');
+        setRegistrationId(null);
     };
 
     return (
@@ -348,7 +207,192 @@ const GetInvolved = () => {
                 isOpen={modalOpen}
                 onClose={closeModal}
                 preSelectedRole={selectedRole}
+                registrationId={registrationId}
+                setRegistrationId={setRegistrationId}
+                navigate={navigate}
             />
+        </div>
+    );
+};
+
+// Internal Modal Component
+const InvolvementModal = ({ isOpen, onClose, preSelectedRole, registrationId, navigate, setRegistrationId }) => {
+    // THIS GUARD CLAUSE IS THE FIX FOR THE CANCEL BUTTON. 
+    // It completely unmounts the modal when isOpen is false, removing the blocking overlay.
+    if (!isOpen) return null;
+
+    const [form, setForm] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        role: preSelectedRole || '',
+        organization: '',
+        website: '',
+        resume: null,
+        message: '',
+    });
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
+
+    const handleChange = (e) => {
+        const { name, value, files } = e.target;
+        if (name === 'resume') {
+            setForm({ ...form, resume: files[0] });
+        } else {
+            setForm({ ...form, [name]: value });
+        }
+    };
+
+    const handleDone = () => {
+        onClose(); // Close the modal
+        if (registrationId) {
+            navigate(`/payment/${registrationId}`); // Go to the payment page
+        }
+    };
+
+    // Helper to map frontend string to backend Enum
+    const mapRoleToCategory = (role) => {
+        switch (role) {
+            case 'mentor': return 'MENTOR';
+            case 'partner': return 'PARTNER';
+            case 'volunteer': return 'PROFESSIONAL';
+            default: return 'STUDENT';
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+
+        try {
+            const payload = {
+                name: form.name,
+                email: form.email,
+                phone: form.phone,
+                country: 'Kenya',
+                category: mapRoleToCategory(form.role),
+                message: form.message,
+            };
+
+            const response = await fetch('/api/registrations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                let errorMessage = 'Failed to submit registration';
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.message || errorMessage;
+                } catch (_) { /* Ignore parse errors */ }
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
+
+            setRegistrationId(data.id);
+            setSuccess(true);
+
+            setForm({
+                name: '',
+                email: '',
+                phone: '',
+                role: preSelectedRole || '',
+                organization: '',
+                website: '',
+                resume: null,
+                message: '',
+            });
+
+        } catch (err) {
+            console.error('Registration error:', err);
+            setError(err.message || 'Something went wrong.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="modal active">
+            <div className="modal-overlay" onClick={onClose}></div>
+            <div className="modal-card">
+                <button className="close-modal-btn" onClick={onClose}>
+                    <i className="fa-solid fa-xmark"></i>
+                </button>
+                <div className="modal-header">
+                    <h2>Get Involved</h2>
+                    <p>Tell us how you'd like to collaborate with AfriLumina.</p>
+                </div>
+                {success ? (
+                    <div className="form-success-card active">
+                        <i className="fa-solid fa-circle-check"></i>
+                        <h3>Thank You!</h3>
+                        <p>Your application has been submitted successfully. We'll be in touch soon.</p>
+                        <button className="btn primary-btn" onClick={handleDone}>Done</button>
+                    </div>
+                ) : (
+                    <form className="modal-form" onSubmit={handleSubmit}>
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label>Full Name / Org Name</label>
+                                <input type="text" name="name" value={form.name} onChange={handleChange} required />
+                            </div>
+                            <div className="form-group">
+                                <label>Email Address</label>
+                                <input type="email" name="email" value={form.email} onChange={handleChange} required />
+                            </div>
+                        </div>
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label>Phone Number</label>
+                                <input type="tel" name="phone" value={form.phone} onChange={handleChange} required />
+                            </div>
+                            <div className="form-group">
+                                <label>Involvement Type</label>
+                                <select name="role" value={form.role} onChange={handleChange} required>
+                                    <option value="">Select how to get involved</option>
+                                    <option value="mentor">Become a Mentor</option>
+                                    <option value="partner">Partner with Us</option>
+                                    <option value="volunteer">Volunteer</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label>Company / Organization <span className="optional">(Optional)</span></label>
+                                <input type="text" name="organization" value={form.organization} onChange={handleChange} />
+                            </div>
+                            <div className="form-group">
+                                <label>LinkedIn / Website <span className="optional">(Optional)</span></label>
+                                <input type="url" name="website" value={form.website} onChange={handleChange} />
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <label>Upload Resume / Profile <span className="required">* (.pdf, .doc, .docx - Max 5MB)</span></label>
+                            <div className="file-dropzone">
+                                <input type="file" name="resume" accept=".pdf,.doc,.docx" onChange={handleChange} />
+                                <div className="file-dropzone-content">
+                                    <i className="fa-solid fa-cloud-arrow-up"></i>
+                                    <span className="dropzone-title">Click to upload or drag and drop</span>
+                                    <span className="dropzone-sub">PDF, DOC, or DOCX (Max 5MB)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <label>How can you support or why are you interested?</label>
+                            <textarea name="message" value={form.message} onChange={handleChange} required></textarea>
+                        </div>
+                        {error && <div className="error-msg" style={{ color: 'red', margin: '10px 0' }}>{error}</div>}
+                        <button type="submit" className="submit-btn" disabled={loading}>
+                            {loading ? 'Submitting...' : 'Submit Inquiry'}
+                            <i className="fa-regular fa-paper-plane"></i>
+                        </button>
+                    </form>
+                )}
+            </div>
         </div>
     );
 };

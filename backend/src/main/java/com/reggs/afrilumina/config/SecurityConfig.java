@@ -59,7 +59,7 @@ public class SecurityConfig {
                         // Public: visitor registrations, payment initiation + webhooks, auth, docs
                         .requestMatchers(
                             "/api/auth/**",
-                            "/api/registrations",
+                            "/api/registrations/**",
                             "/api/payments/**",
                             "/docs/**",
                             "/swagger-ui/**",
